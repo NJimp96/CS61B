@@ -100,8 +100,8 @@ public class Model {
      * given a Tile object t, we get its value with t.value().
      */
     public boolean maxTileExists() {
-        for (int i = 0; i < board.size(); i++){
-            for (int j = 0; j < board.size(); j++){
+        for (int i = 0; i < board.size(); i++) {
+            for (int j = 0; j < board.size(); j++) {
                 if (board.tile(i,j) != null){
 
                     if(board.tile(i,j).value() == MAX_PIECE){
@@ -115,6 +115,13 @@ public class Model {
         return false;
     }
 
+    public boolean compareTiles(Tile t1, Tile t2) {
+        if (t1.value() == t2.value()) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Returns true if there are any valid moves on the board.
      * There are two ways that there can be valid moves:
@@ -122,7 +129,30 @@ public class Model {
      * 2. There are two adjacent tiles with the same value.
      */
     public boolean atLeastOneMoveExists() {
-        // TODO: Fill in this function.
+        if(emptySpaceExists() == true) {
+            return true;
+        }
+
+        for (int i = 0; i < board.size(); i++) {
+            for (int j = 0; j < board.size(); j++) {
+
+                int[][] adjacent_tiles = new int[4][4];
+
+                adjacent_tiles[0] = new int[] {Math.max(0, i-1), j};
+                adjacent_tiles[1] = new int[] {Math.min(board.size()-1, i+1), j};
+                adjacent_tiles[2] = new int[] {i, Math.max(0, j-1)};
+                adjacent_tiles[3] = new int[] {i, Math.min(board.size()-1, j+1)};
+
+                for(int[] x: adjacent_tiles) {
+                    if (compareTiles(board.tile(i,j), board.tile(x[0], x[1])) & (i != x[0] ^ j != x[1])) {
+                        return true;
+                    }
+                }
+
+
+            }
+        }
+
         return false;
     }
 
@@ -140,10 +170,37 @@ public class Model {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      */
+    public int[] moveTileHelper(int x, int y, int v) {
+
+
+        if (y == board.size()-1) {
+            return new int[] {x,y};
+        }
+
+        else if (board.tile(x,y+1) != null) {
+            if (board.tile(x,y+1).value() != v) {
+                return new int[] {x,y};
+            }
+
+            return new int[] {x,y+1};
+        }
+
+
+        return moveTileHelper(x, y+1, v);
+    }
+
     public void moveTileUpAsFarAsPossible(int x, int y) {
         Tile currTile = board.tile(x, y);
         int myValue = currTile.value();
-        int targetY = y;
+        int targetY = moveTileHelper(x,y, myValue)[1];
+        //int upperMerged = moveTileHelper(x,y)[1];
+
+        if (currTile != null) {
+            board.move(x, targetY, currTile);
+        }
+
+
+
 
         // TODO: Tasks 5, 6, and 10. Fill in this function.
     }
@@ -154,7 +211,13 @@ public class Model {
      * so we are tilting the tiles in this column up.
      * */
     public void tiltColumn(int x) {
-        // TODO: Task 7. Fill in this function.
+
+        for (int i=board.size()-1; i >= 0 ; i--) {
+            if (board.tile(x,i) != null) {
+                moveTileUpAsFarAsPossible(x, i);
+
+            }
+        }
     }
 
     public void tilt(Side side) {
