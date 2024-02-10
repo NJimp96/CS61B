@@ -193,10 +193,12 @@ public class Model {
         if (currTile != null & y < board.size() - 1) {
             int myValue = currTile.value();
             int[] moveValues = {moveTileHelper(x, y, myValue)[1], moveTileHelper(x, y, myValue)[2]};
-            board.move(x, moveValues[0], currTile);
+            if (moveValues[0] != y) {
+                board.move(x, moveValues[0], currTile);
 
-            if (moveValues[1] == 1) {
-                score += myValue * 2;
+                if (moveValues[1] == 1) {
+                    score += myValue * 2;
+                }
             }
         }
     }
